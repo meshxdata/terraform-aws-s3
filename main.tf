@@ -19,6 +19,8 @@ data "aws_iam_policy_document" "tls_only" {
 }
 
 resource "aws_s3_bucket" "this" {
+  #checkov:skip=CKV2_AWS_62:Event notifications depend on the consumer and are configured outside this module.
+  #checkov:skip=CKV_AWS_144:Cross-region replication needs a destination bucket and IAM role, which are out of scope here.
   bucket = var.bucket_name
   tags   = var.tags
 }
@@ -58,8 +60,18 @@ resource "aws_s3_bucket_policy" "tls_only" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "this" {
-  count  = length(var.lifecycle_rules) > 0 ? 1 : 0
   bucket = aws_s3_bucket.this.id
+
+  rule {
+    id     = "abort-incomplete-multipart-uploads"
+    status = "Enabled"
+
+    filter {}
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = var.abort_incomplete_multipart_days
+    }
+  }
 
   dynamic "rule" {
     for_each = var.lifecycle_rules

@@ -6,7 +6,7 @@ Creates an S3 bucket with:
 - SSE-KMS default encryption with bucket keys. Uses your `kms_key_arn` if set, otherwise the AWS managed key
 - All public access blocked
 - A bucket policy that denies requests not made over TLS (on by default)
-- Optional lifecycle rules
+- A lifecycle rule that aborts incomplete multipart uploads (7 days by default), plus any optional lifecycle rules you define
 - Optional server access logging
 
 ## Usage
@@ -50,8 +50,13 @@ module "s3" {
 | deny_insecure_transport | Attach a bucket policy that denies any request not made over TLS. | `bool` | `true` | no |
 | logging_target_bucket | Bucket that receives server access logs. If null, access logging is disabled. | `string` | `null` | no |
 | logging_target_prefix | Prefix for server access log objects in the target bucket. | `string` | `""` | no |
+| abort_incomplete_multipart_days | Days after which incomplete multipart uploads are aborted. | `number` | `7` | no |
 | lifecycle_rules | Lifecycle rules: `id`, `enabled`, `prefix`, `expiration_days`, `noncurrent_expiration_days`, `transitions`. | `list(object)` | `[]` | no |
 | tags | Tags to apply to the bucket. | `map(string)` | `{}` | no |
+
+## Checks
+
+CI runs `terraform fmt`, `terraform validate`, TFLint, Checkov, and Trivy on every push. Checkov rules CKV2_AWS_62 (event notifications) and CKV_AWS_144 (replication) are skipped on purpose. Both depend on the consumer and are configured outside this module.
 
 ## Outputs
 

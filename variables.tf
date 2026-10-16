@@ -59,3 +59,9 @@ variable "tags" {
   description = "Tags to apply to the bucket."
   default     = {}
 }
+
+variable "abort_incomplete_multipart_days" {
+  type        = number
+  description = "Days after which incomplete multipart uploads are aborted."
+  default     = 7
+}
